@@ -1,0 +1,35 @@
+version: '3.7'
+
+volumes:
+  clifish1:
+  clirest1:
+
+networks:
+  test:
+    name: fish
+
+services:
+
+  clifish1:
+    container_name: clifish
+    image: hyperledger/fabric-tools:2.2
+    labels:
+      service: hyperledger-fabric
+    tty: true
+    stdin_open: true
+    environment:
+      - GOPATH=/opt/gopath
+      - FABRIC_LOGGING_SPEC=INFO
+      - FABRIC_CFG_PATH=/etc/hyperledger/peercfg
+        #- FABRIC_LOGGING_SPEC=DEBUG
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+        - ../org_crypto_conf/organizations:/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations
+        - ../configtx/channel-artifacts/:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel
+        - ../scrpt:/opt/gopath/src/github.com/hyperledger/fabric/peer/scrpt
+        - ../chaincode/source-app:/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode
+        - ./peercfg:/etc/hyperledger/peercfg
+    networks:
+      - test
+

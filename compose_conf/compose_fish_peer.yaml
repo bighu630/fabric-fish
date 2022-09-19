@@ -1,0 +1,102 @@
+
+version: '3.7'
+
+volumes:
+  peer0.Peer_fish.com:
+  peer1.Peer_fish.com:
+
+networks:
+  test:
+    name: fish
+
+services:
+  peer0.Peer_fish.com:
+    container_name: peer0.Peer_fish.com
+    image: hyperledger/fabric-peer:2.2
+    labels:
+      service: hyperledger-fabric
+    environment:
+      - FABRIC_CFG_PATH=/etc/hyperledger/peercfg
+      # - FABRIC_LOGGING_SPEC=INFO
+      - FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=false
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variables
+      - CORE_PEER_ID=peer0.Peer_fish.com
+      #指定该组织下其他peer的通信ip和端口
+      - CORE_PEER_ADDRESS=peer1.Peer_fish.com:7053
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.Peer_fish.com:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.Peer_fish.com:7051
+
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.Peer_fish.com:7051
+
+      - CORE_PEER_LOCALMSPID=Org1MSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+      - CORE_OPERATIONS_LISTENADDRESS=peer0.Peer_fish.com:9444
+      - CORE_METRICS_PROVIDER=prometheus
+      - CHAINCODE_AS_A_SERVICE_BUILDER_CONFIG={"peername":"peer0fish"}
+      - CORE_CHAINCODE_EXECUTETIMEOUT=300s
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock                                                       
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=fish
+    volumes:
+        - ../org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/peers/peer0.Peer_fish.com:/etc/hyperledger/fabric
+        - peer0.Peer_fish.com:/var/hyperledger/production
+        - ./peercfg:/etc/hyperledger/peercfg
+        - /var/run/docker.sock:/host/var/run/docker.sock
+    working_dir: /root
+    command: peer node start
+    ports:
+      - 7051:7051
+      - 9444:9444
+    networks:
+      - test
+
+
+  peer1.Peer_fish.com:
+    container_name: peer1.Peer_fish.com
+    image: hyperledger/fabric-peer:2.2
+    labels:
+      service: hyperledger-fabric
+    environment:
+      - FABRIC_CFG_PATH=/etc/hyperledger/peercfg
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=false
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variables
+      - CORE_PEER_ID=peer1.Peer_fish.com
+      - CORE_PEER_ADDRESS=peer0.Peer_fish.com:7051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7053
+      - CORE_PEER_CHAINCODEADDRESS=peer1.Peer_fish.com:7054
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7054
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.Peer_fish.com:7053
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.Peer_fish.com:7053
+      - CORE_PEER_LOCALMSPID=Org1MSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+      - CORE_OPERATIONS_LISTENADDRESS=peer1.Peer_fish.com:9445
+      - CORE_METRICS_PROVIDER=prometheus
+      - CHAINCODE_AS_A_SERVICE_BUILDER_CONFIG={"peername":"peer1fish"}
+      - CORE_CHAINCODE_EXECUTETIMEOUT=300s
+
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock                                                       
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=fish
+    volumes:
+        - ../org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/peers/peer1.Peer_fish.com:/etc/hyperledger/fabric
+        - peer1.Peer_fish.com:/var/hyperledger/production
+        - ./peercfg:/etc/hyperledger/peercfg
+        - /var/run/docker.sock:/host/var/run/docker.sock
+    working_dir: /root
+    command: peer node start
+    ports:
+      - 7053:7053
+      - 9445:9445
+    networks:
+      - test

@@ -1,0 +1,12 @@
+.
+├── compose-couch.yaml 		#couch数据库的配置文件
+├── compose_ca.yaml 		#ca的配置文件
+├── compose_fish_cli.yaml 	#客户端的配置文件
+├── compose_fish_orderer.yaml 	#orderer组织的配置文件
+├── compose_fish_peer.yaml 	#fish组织的peer配置文件
+├── compose_rest_peer.yaml 	#rest组织的peer配置文件
+├── composefile 		#本说明文件
+└── peercfg 			#启动peer的配置文件,peer的核心配置(但是不建议修改,官方的方案是使用默认文件,需要改的地方在compose文件中指定环境变量,所以这里是在官网上拷贝下来的,实际上没什么要细说的)
+   ├── core.yaml
+   └── mspreally
+      └── keystore

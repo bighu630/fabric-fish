@@ -1,0 +1,30 @@
+OrdererOrgs:
+  # ------------------------------------------
+  # Orderer配置文件
+  # ------------------------------------------
+  - Name: Order_fish # 鱼产业链的Orderer节点
+    Domain: fish.com # 域名
+    EnableNodeOUs: true #在msp文件夹下生产yaml文件
+    Specs:
+      - Hostname: orderer #这回产生一个orderer.fish.com的orderer节点的密钥证书文件
+      - Hostname: orderer1
+
+PeerOrgs:
+  # ------------------------------------------
+  # peer配置文件
+  # ------------------------------------------
+  - Name: Peer_fish #peer名称
+    Domain: Peer_fish.com #域名
+    EnableNodeOUs: true #在msp文件夹下生产yaml文件
+    Template:
+      Count: 2
+    Users:
+      Count: 1
+
+  - Name: Rest
+    Domain: Rest.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+    Users:
+      Count: 1

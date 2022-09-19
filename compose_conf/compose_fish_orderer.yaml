@@ -1,0 +1,117 @@
+version: '3.7'
+
+volumes:
+  orderer.fish.com:
+  orderer1.fish.com:
+
+networks:
+  test:
+    name: fish
+
+services:
+
+  orderer.fish.com:
+    container_name: orderer.fish.com
+    image: hyperledger/fabric-orderer:2.2
+    labels:
+      service: hyperledger-fabric
+    environment:
+      #设置日志等级为DEBUG,环境搭建好之后建议使用INFO
+      - FABRIC_LOGGING_SPEC=DEBUG
+      #orderer监听外部的ip,这里表示监听所有ip
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      #监听端口(这个端口好似该orderer与外部交换的主要端口)
+      - ORDERER_GENERAL_LISTENPORT=7050
+      #该组织的MSPID(在身份认证过程中会首先识别MSPID再去寻找MSP文件,该配置与configtx中的配置文件相关联)
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      #MSP的位置(这个位置是docker容器中的位置,不是本机位置,但这个位置是从本机映射到docker里面的,也就是说)
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      # enabled TLS
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      #下面这些证书之类由于是固定的文件映射,所以不需要改
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      #创世块的类型(多个orderer只需要指定一个就行)(file/none),这个orderer指定创世快为file
+      - ORDERER_GENERAL_BOOTSTRAPMETHOD=file
+      #创世块的路径(同样也是文件映射进来的),创世快是使用配置文件生成的,该配置文件下一步会说(创世快中主要配置了orderer之间的链接,以及指定了各个组织的msp身份)
+      - ORDERER_GENERAL_BOOTSTRAPFILE=/var/hyperledger/orderer/orderer.genesis.block
+      - ORDERER_CHANNELPARTICIPATION_ENABLED=true
+      #tls配置(这些均为默认配置)
+      - ORDERER_ADMIN_TLS_ENABLED=true
+      - ORDERER_ADMIN_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_ADMIN_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_ADMIN_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_ADMIN_TLS_CLIENTROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_ADMIN_LISTENADDRESS=0.0.0.0:8053
+      - ORDERER_OPERATIONS_LISTENADDRESS=orderer.fish.com:9443
+      - ORDERER_METRICS_PROVIDER=prometheus
+    working_dir: /root
+    command: orderer
+
+    #文件映射
+    volumes:
+      #创世快文件
+        - ../configtx/channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+      #orderer的身份证明文件
+        - ../org_crypto_conf/organizations/ordererOrganizations/fish.com/orderers/orderer.fish.com/msp:/var/hyperledger/orderer/msp
+        - ../org_crypto_conf/organizations/ordererOrganizations/fish.com/orderers/orderer.fish.com/tls:/var/hyperledger/orderer/tls
+        - orderer.fish.com:/var/hyperledger/production/orderer
+    #端口映射
+    ports:
+      - 7050:7050
+      - 8053:8053
+      - 9443:9443
+
+    #网络环境
+    networks:
+      - test
+
+        #同上
+  orderer1.fish.com:
+    container_name: orderer1.fish.com
+    image: hyperledger/fabric-orderer:2.2
+    labels:
+      service: hyperledger-fabric
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=7049
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      # enabled TLS
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_GENERAL_BOOTSTRAPMETHOD=file
+      - ORDERER_GENERAL_BOOTSTRAPFILE=/var/hyperledger/orderer/orderer.genesis.block
+      - ORDERER_CHANNELPARTICIPATION_ENABLED=true
+      - ORDERER_ADMIN_TLS_ENABLED=true
+      - ORDERER_ADMIN_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_ADMIN_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_ADMIN_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_ADMIN_TLS_CLIENTROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_ADMIN_LISTENADDRESS=0.0.0.0:7048
+      - ORDERER_OPERATIONS_LISTENADDRESS=orderer1.fish.com:9442
+      - ORDERER_METRICS_PROVIDER=prometheus
+    working_dir: /root
+    command: orderer
+    volumes:
+        - ../configtx/channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+        - ../org_crypto_conf/organizations/ordererOrganizations/fish.com/orderers/orderer1.fish.com/msp:/var/hyperledger/orderer/msp
+        - ../org_crypto_conf/organizations/ordererOrganizations/fish.com/orderers/orderer1.fish.com/tls:/var/hyperledger/orderer/tls
+        - orderer1.fish.com:/var/hyperledger/production/orderer
+    ports:
+      - 7049:7049
+      - 7048:7048
+      - 9442:9442
+    networks:
+      - test
+

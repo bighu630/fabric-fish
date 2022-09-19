@@ -1,0 +1,105 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+#该compose文件的版本
+version: '3.7'
+
+#指定网络名称(应该是表示这个网络叫什么,与docker相关)
+#所有节点都在同一个网络里,所以可以通过域名访问
+#相当于连接在同一个交换机下面
+#在分布式环境中可以通过指定/etc/hosts 文件来实现域名解析而不借助dns
+networks:
+  test:
+    name: fish
+
+services:
+
+  #配置名(后面可以指定这个名称来启动这个docker)
+  ca_fish:
+    #指定使用那个镜像
+    image: hyperledger/fabric-ca:latest
+    #指定lable,这里有什么有不清楚
+    labels:
+      service: hyperledger-fabric
+    #利用enviroment见这些环境变量将容器中的环境配置好
+    #相当于在容器内使用 export FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server 命令配置环境,只是在这里配置就不需要进入docker里面(或者是没有这些环境doker无法启动)
+    environment:
+      #指定docker中相关的环境变量
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME=ca-fish
+      #开启tls
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      #ca的端口是7054
+      - FABRIC_CA_SERVER_PORT=7054
+      #监听地址
+      - FABRIC_CA_SERVER_OPERATIONS_LISTENADDRESS=0.0.0.0:17054
+
+
+    #表示docker到主机之间的端口映射,前面的表示主机端口,后面的表示容器内的端口
+    #对于主机上的端口配置过的就不能在用,所以可以看到后面的端口都是不一样的,实际的生产中应该是要同样属性的配成同样的端口
+    ports:
+      - "7054:7054"
+      - "17054:17054"
+    #在容器中执行相关命令,这里是开启ca的服务其中用户名和密码是 admin:adminpw
+    command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
+
+
+
+    #主机文件映射到docker中,前面表示主机目录,后面表示映射到docker中的位置
+    volumes:
+      #这里指定的就是fabric.md中提到的要删除内容的文件夹(上一步会在这个文件夹下面生成相关的文件)
+      #docker的文件映射是双向的docker中映射的文件发生改变是外部文件同样会改变(这里将这个文件夹映射出去是为了在外面好复制相关的证书)
+      - ../ca_conf/fish:/etc/hyperledger/fabric-ca-server
+    #docker的名称,不是ca的名称给docker起一个别名,不然他会用一个随机数给它当别名
+    container_name: ca_fish
+    #指定他用那个网络
+    networks:
+      - test
+
+
+
+
+
+
+  #org2的ca配置,同上
+  ca_rast:
+    image: hyperledger/fabric-ca:latest
+    labels:
+      service: hyperledger-fabric
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME=ca-rest
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_PORT=8054
+      - FABRIC_CA_SERVER_OPERATIONS_LISTENADDRESS=0.0.0.0:18054
+    ports:
+      - "8054:8054"
+      - "18054:18054"
+    command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
+    volumes:
+      - ../ca_conf/rest:/etc/hyperledger/fabric-ca-server
+    container_name: ca_rest
+    networks:
+      - test
+
+  #orderer的ca配置
+  ca_orderer:
+    image: hyperledger/fabric-ca:latest
+    labels:
+      service: hyperledger-fabric
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME=ca-orderer
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_PORT=9054
+      - FABRIC_CA_SERVER_OPERATIONS_LISTENADDRESS=0.0.0.0:19054
+    ports:
+      - "9054:9054"
+      - "19054:19054"
+    command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
+    volumes:
+      - ../ca_conf/ordererca:/etc/hyperledger/fabric-ca-server
+    container_name: ca_orderer
+    networks:
+      - test

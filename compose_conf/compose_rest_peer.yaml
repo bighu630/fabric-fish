@@ -1,0 +1,60 @@
+
+version: '3.7'
+
+volumes:
+  peer0.Rest.com:
+
+networks:
+  test:
+    name: fish
+
+services:
+  peer0.Rest.com:
+    container_name: peer0.Rest.com
+    image: hyperledger/fabric-peer:2.2
+    labels:
+      service: hyperledger-fabric
+    environment:
+      #指定核心配置文件的位置,下面这些选项在peercfg中都有相关的默认配置(也就是说下面这些配置可以写在peercfg/core.yaml这个文件里面)
+      - FABRIC_CFG_PATH=/etc/hyperledger/peercfg
+      #设置日志模式
+      - FABRIC_LOGGING_SPEC=DEBUG
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      #Tls相关配置
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=false
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variables
+      - CORE_PEER_ID=peer0.Rest.com
+      - CORE_PEER_ADDRESS=peer0.Rest.com:9051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:9051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.Rest.com:9052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9052
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.Rest.com:9051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.Rest.com:9051
+      #这个MSPID需要注意与../configtx/configtx.yaml文件中所配置的一样
+      - CORE_PEER_LOCALMSPID=Org2MSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp      
+      - CORE_OPERATIONS_LISTENADDRESS=peer0.Rest.com:9446
+      - CORE_METRICS_PROVIDER=prometheus
+      - CHAINCODE_AS_A_SERVICE_BUILDER_CONFIG={"peername":"peer0rest"}
+      - CORE_CHAINCODE_EXECUTETIMEOUT=300s
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock                                                       
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=fish
+    volumes:
+        - ../org_crypto_conf/organizations/peerOrganizations/Rest.com/peers/peer0.Rest.com:/etc/hyperledger/fabric
+        - peer0.Rest.com:/var/hyperledger/production
+        - ./peercfg:/etc/hyperledger/peercfg
+        #docker.sock文件是安装docker是产生的(这里将这个文件映射到容器内可能是告诉容器当前的网络环境,因为同一组织下的peer是知道其他peer的存在)
+        - /var/run/docker.sock:/host/var/run/docker.sock
+    working_dir: /root
+    command: peer node start
+    ports:
+      - 9051:9051
+      - 9446:9446
+    networks:
+      - test
+
+#这个配置文件中没有显现出来的是包含多个peer的情况,可以在./compose_fish_peer.yaml这个文件中查看

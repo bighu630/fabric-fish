@@ -1,0 +1,4 @@
+ca_conf/rest/msp/keystore/
+ca_conf/ordererca/msp/keystore/
+ca_conf/fish/msp/keystore/
+fabric-fish/
