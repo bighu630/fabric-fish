@@ -11,6 +11,9 @@ import (
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
 
+const waterPrefix = "water"
+const fishPrefix = "fish"
+
 type FishChainCode struct {
 }
 
@@ -22,10 +25,20 @@ type FishInfo struct {
 	FishQuality string `json:"FishQuality"` //鱼的品质
 }
 
+type Water struct {
+	FishID       string `json:"FishID"`       //鱼的ID
+	Temperature  string `json:"Temperature"`  //温度
+	Chroma       string `json:"Chroma"`       //色度
+	Turbidity    string `json:"Turbidity"`    //浑浊度
+	Conductivity string `json:"Conductivity"` //导电率
+}
+
+//链码初始化
 func (f *FishChainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	return shim.Success(nil)
 }
 
+//Invoke 方法，相当于是路由
 func (f *FishChainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	fn, args := stub.GetFunctionAndParameters()
 	if fn == "funAddAFish" {
@@ -36,12 +49,17 @@ func (f *FishChainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	return shim.Error("Recevied unkown function invocation")
 }
 
-func (f *FishChainCode) funAddAFish(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+// funAddAFish 添加一条“鱼”的信息到区块链上
+func (f *FishChainCode) funcAddAFish(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	var err error
 	var FishInfos FishInfo
+
+	//输入判断
 	if len(args) != 5 {
 		return shim.Error("Incorrect number of arguments.")
 	}
+
+	//输入解析
 	FishInfos.FishID = args[0]
 	if FishInfos.FishID == "" {
 		return shim.Error("FishID can not be empty.")
@@ -56,7 +74,14 @@ func (f *FishChainCode) funAddAFish(stub shim.ChaincodeStubInterface, args []str
 		return shim.Error(err.Error())
 	}
 
-	err = stub.PutState(FishInfos.FishID, FishInfosJSONasBytes)
+	//构造复合键
+	fishKey, err := stub.CreateCompositeKey(fishPrefix, []string{FishInfos.FishID})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	//提交信息
+	err = stub.PutState(fishKey, FishInfosJSONasBytes)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -64,29 +89,35 @@ func (f *FishChainCode) funAddAFish(stub shim.ChaincodeStubInterface, args []str
 	return shim.Success(nil)
 }
 
-func (f *FishChainCode) funGetFishInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+// funcGetFishInfo 读取一条鱼的信息
+func (f *FishChainCode) funcGetFishInfo(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
+	//判断输入是否合法
 	if len(args) != 1 {
 		return shim.Error("Incorrect number of arguments.")
 	}
+
+	//构造查询复合键
 	FishID := args[0]
-	resultsIterator, err := stub.GetHistoryForKey(FishID)
+	fishKey, err := stub.CreateCompositeKey(fishPrefix, []string{FishID})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	defer resultsIterator.Close()
+
+	//查询
+	results, err := stub.GetState(fishKey)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 
 	var fishinfo FishInfo
 
-	for resultsIterator.HasNext() {
-		//读取数据
-		response, err := resultsIterator.Next()
-		if err != nil {
-			return shim.Error(err.Error())
-		}
-		//解析数据为结构体
-		json.Unmarshal(response.Value, &fishinfo)
+	//读取数据
+	if err != nil {
+		return shim.Error(err.Error())
 	}
+	//解析数据为结构体
+	json.Unmarshal(results, &fishinfo)
 	//解析数据为json
 	jsonsAsBytes, err := json.Marshal(fishinfo)
 	if err != nil {
@@ -96,6 +127,7 @@ func (f *FishChainCode) funGetFishInfo(stub shim.ChaincodeStubInterface, args []
 }
 
 func main() {
+	//开启链码
 	err := shim.Start(new(FishChainCode))
 	if err != nil {
 		fmt.Printf("Error starting Food chaincode: %s ", err)
