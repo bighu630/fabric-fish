@@ -1,4 +1,5 @@
-#指定这个变量,为了方便
+#!/bin/bash
+# 指定这个变量,为了方便
 fabricRest=/home/bighu/文档/区块链/fabric-Restaurant
 #删除主机根目录下的一个配置文件(这个文件是下一条指令生成的,但是由于有三个组织,每个的不一样,并且他不会自动覆盖,所以要手动删除),也可以不删除然后在这个文件里修改ca项的ip和端口,这里选择删除,让它自动生成
 rm ~/.fabric-ca-client/fabric-ca-client-config.yaml
@@ -6,7 +7,7 @@ rm ~/.fabric-ca-client/fabric-ca-client-config.yaml
 fabric-ca-client enroll -u https://admin:adminpw@localhost:7054 --caname ca-fish --tls.certfiles ${fabricRest}/ca_conf/fish/ca-cert.pem
 
 #先指定位置写入这个文件,用来指示在验证身份时用到的证书,同时也标识了四类身份
-  echo 'NodeOUs:
+echo 'NodeOUs:
   Enable: true
   ClientOUIdentifier:
     Certificate: cacerts/localhost-7054-ca-fish.pem
@@ -19,7 +20,7 @@ fabric-ca-client enroll -u https://admin:adminpw@localhost:7054 --caname ca-fish
     OrganizationalUnitIdentifier: admin
   OrdererOUIdentifier:
     Certificate: cacerts/localhost-7054-ca-fish.pem
-    OrganizationalUnitIdentifier: orderer' > ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/msp/config.yaml
+    OrganizationalUnitIdentifier: orderer' >${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/msp/config.yaml
 
 #将ca的证书拷贝到指定位置,相当于证书分发
 cp ${fabricRest}/ca_conf/fish/ca-cert.pem ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/msp/tlscacerts/ca.crt
@@ -49,16 +50,15 @@ fabric-ca-client enroll -u https://fish_peer0:fish_peer0pw@localhost:7054 --cana
 fabric-ca-client enroll -u https://fish_peer1:fish_peer1pw@localhost:7054 --caname ca-fish -M ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/peers/peer1.Peer_fish.com/tls --enrollment.profile tls --csr.hosts peer1.Peer_fish.com --csr.hosts localhost --tls.certfiles ${fabricRest}/ca_conf/fish/ca-cert.pem
 
 #复制tls相关的证书文件,由于上述配置中使用了tls选项,所以在通信过程中需要进行tls验证(下面6行)
-cp ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/peers/peer0.Peer_fish.com/tls/tlscacerts/* ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/peers/peer0.Peer_fish.com/tls/ca.crt      
+cp ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/peers/peer0.Peer_fish.com/tls/tlscacerts/* ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/peers/peer0.Peer_fish.com/tls/ca.crt
 
-cp ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/peers/peer0.Peer_fish.com/tls/signcerts/*  ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/peers/peer0.Peer_fish.com/tls/server.crt 
+cp ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/peers/peer0.Peer_fish.com/tls/signcerts/* ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/peers/peer0.Peer_fish.com/tls/server.crt
 
 cp ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/peers/peer0.Peer_fish.com/tls/keystore/* ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/peers/peer0.Peer_fish.com/tls/server.key
 
+cp ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/peers/peer1.Peer_fish.com/tls/tlscacerts/* ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/peers/peer1.Peer_fish.com/tls/ca.crt
 
-cp ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/peers/peer1.Peer_fish.com/tls/tlscacerts/* ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/peers/peer1.Peer_fish.com/tls/ca.crt      
-
-cp ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/peers/peer1.Peer_fish.com/tls/signcerts/*  ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/peers/peer1.Peer_fish.com/tls/server.crt 
+cp ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/peers/peer1.Peer_fish.com/tls/signcerts/* ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/peers/peer1.Peer_fish.com/tls/server.crt
 
 cp ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/peers/peer1.Peer_fish.com/tls/keystore/* ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/peers/peer1.Peer_fish.com/tls/server.key
 
@@ -78,13 +78,12 @@ cp ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/m
 
 #注意该文件的最后几行
 
-
 #同上
 rm ~/.fabric-ca-client/fabric-ca-client-config.yaml
 # ca-rest的配置
 fabric-ca-client enroll -u https://admin:adminpw@localhost:8054 --caname ca-rest --tls.certfiles ${fabricRest}/ca_conf/rest/ca-cert.pem
 
-  echo 'NodeOUs:
+echo 'NodeOUs:
   Enable: true
   ClientOUIdentifier:
     Certificate: cacerts/localhost-8054-ca-rest.pem
@@ -97,7 +96,7 @@ fabric-ca-client enroll -u https://admin:adminpw@localhost:8054 --caname ca-rest
     OrganizationalUnitIdentifier: admin
   OrdererOUIdentifier:
     Certificate: cacerts/localhost-8054-ca-rest.pem
-    OrganizationalUnitIdentifier: orderer' > ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Rest.com/msp/config.yaml
+    OrganizationalUnitIdentifier: orderer' >${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Rest.com/msp/config.yaml
 
 cp ${fabricRest}/ca_conf/rest/ca-cert.pem ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Rest.com/msp/tlscacerts/ca.crt
 
@@ -117,9 +116,9 @@ cp ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Rest.com/msp/co
 
 fabric-ca-client enroll -u https://rest_peer0:rest_peer0pw@localhost:8054 --caname ca-rest -M ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Rest.com/peers/peer0.Rest.com/tls --enrollment.profile tls --csr.hosts peer0.Rest.com --csr.hosts localhost --tls.certfiles ${fabricRest}/ca_conf/rest/ca-cert.pem
 
-cp ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Rest.com/peers/peer0.Rest.com/tls/tlscacerts/* ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Rest.com/peers/peer0.Rest.com/tls/ca.crt      
+cp ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Rest.com/peers/peer0.Rest.com/tls/tlscacerts/* ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Rest.com/peers/peer0.Rest.com/tls/ca.crt
 
-cp ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Rest.com/peers/peer0.Rest.com/tls/signcerts/*  ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Rest.com/peers/peer0.Rest.com/tls/server.crt 
+cp ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Rest.com/peers/peer0.Rest.com/tls/signcerts/* ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Rest.com/peers/peer0.Rest.com/tls/server.crt
 
 cp ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Rest.com/peers/peer0.Rest.com/tls/keystore/* ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Rest.com/peers/peer0.Rest.com/tls/server.key
 
@@ -131,17 +130,11 @@ fabric-ca-client enroll -u https://rest_admin:rest_adminpw@localhost:8054 --cana
 
 cp ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Rest.com/msp/config.yaml ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Rest.com/users/Admin@Rest.com/msp/config.yaml
 
-
-
-
-
-
-
 rm ~/.fabric-ca-client/fabric-ca-client-config.yaml
 # orderer的配置
 fabric-ca-client enroll -u https://admin:adminpw@localhost:9054 --caname ca-orderer --tls.certfiles ${fabricRest}/ca_conf/ordererca/ca-cert.pem
 
-  echo 'NodeOUs:
+echo 'NodeOUs:
   Enable: true
   ClientOUIdentifier:
     Certificate: cacerts/localhost-9054-ca-orderer.pem
@@ -154,7 +147,7 @@ fabric-ca-client enroll -u https://admin:adminpw@localhost:9054 --caname ca-orde
     OrganizationalUnitIdentifier: admin
   OrdererOUIdentifier:
     Certificate: cacerts/localhost-9054-ca-orderer.pem
-    OrganizationalUnitIdentifier: orderer' > ${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/msp/config.yaml
+    OrganizationalUnitIdentifier: orderer' >${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/msp/config.yaml
 
 cp ${fabricRest}/ca_conf/ordererca/ca-cert.pem ${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/msp/tlscacerts/tlsca.fish.com-cert.pem
 
@@ -183,15 +176,15 @@ fabric-ca-client enroll -u https://fish_orderer:fish_ordererpw@localhost:9054 --
 
 fabric-ca-client enroll -u https://fish_orderer1:fish_orderer1pw@localhost:9054 --caname ca-orderer -M ${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/orderers/orderer1.fish.com/tls --enrollment.profile tls --csr.hosts orderer1.fish.com --csr.hosts localhost --tls.certfiles ${fabricRest}/ca_conf/ordererca/ca-cert.pem
 
-cp ${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/orderers/orderer.fish.com/tls/tlscacerts/* ${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/orderers/orderer.fish.com/tls/ca.crt      
+cp ${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/orderers/orderer.fish.com/tls/tlscacerts/* ${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/orderers/orderer.fish.com/tls/ca.crt
 
-cp ${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/orderers/orderer.fish.com/tls/signcerts/*  ${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/orderers/orderer.fish.com/tls/server.crt 
+cp ${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/orderers/orderer.fish.com/tls/signcerts/* ${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/orderers/orderer.fish.com/tls/server.crt
 
 cp ${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/orderers/orderer.fish.com/tls/keystore/* ${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/orderers/orderer.fish.com/tls/server.key
 
-cp ${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/orderers/orderer1.fish.com/tls/tlscacerts/* ${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/orderers/orderer1.fish.com/tls/ca.crt      
+cp ${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/orderers/orderer1.fish.com/tls/tlscacerts/* ${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/orderers/orderer1.fish.com/tls/ca.crt
 
-cp ${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/orderers/orderer1.fish.com/tls/signcerts/*  ${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/orderers/orderer1.fish.com/tls/server.crt 
+cp ${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/orderers/orderer1.fish.com/tls/signcerts/* ${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/orderers/orderer1.fish.com/tls/server.crt
 
 cp ${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/orderers/orderer1.fish.com/tls/keystore/* ${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/orderers/orderer1.fish.com/tls/server.key
 
@@ -205,9 +198,6 @@ cp ${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/ord
 fabric-ca-client enroll -u https://fish_admin:fish_adminpw@localhost:9054 --caname ca-orderer -M ${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/users/Admin@fish.com/msp --tls.certfiles ${fabricRest}/ca_conf/ordererca/ca-cert.pem
 
 cp ${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/msp/config.yaml ${fabricRest}/org_crypto_conf/organizations/ordererOrganizations/fish.com/users/Admin@fish.com/msp/config.yaml
-
-
-
 
 #cp ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/peers/peer0.Peer_fish.com/msp/cacerts/localhost-7054-ca-fish.pem ${fabricRest}/org_crypto_conf/organizations/peerOrganizations/Peer_fish.com/msp/cacerts
 
