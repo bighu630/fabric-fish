@@ -1,3 +1,4 @@
+#!/bin/bash
 export CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/Peer_fish.com/peers/peer0.Peer_fish.com/tls/ca.crt
 export CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/Peer_fish.com/users/Admin\@Peer_fish.com/msp
 

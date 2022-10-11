@@ -114,10 +114,6 @@ func (f *FishChainCode) funcGetFishInfo(stub shim.ChaincodeStubInterface, args [
 
 	var fishinfo FishInfo
 
-	//读取数据
-	if err != nil {
-		return shim.Error(err.Error())
-	}
 	//解析数据为结构体
 	json.Unmarshal(results, &fishinfo)
 	//解析数据为json
@@ -146,8 +142,7 @@ func (f *FishChainCode) funcAddWaterInfo(stub shim.ChaincodeStubInterface, args 
 	WaterInfos.Chroma = args[2]
 	WaterInfos.Turbidity = args[3]
 	WaterInfos.Conductivity = args[4]
-	WaterInfos.TimefoAdd = time.Now().Format()
-
+	WaterInfos.TimefoAdd = time.Now().Format("h")
 	waterInfoJSONasBytes, err := json.Marshal(WaterInfos)
 	if err != nil {
 		return shim.Error(err.Error())
@@ -189,10 +184,6 @@ func (f *FishChainCode) funcGetWaterInfo(stub shim.ChaincodeStubInterface, args 
 
 	var fishinfo FishInfo
 
-	//读取数据
-	if err != nil {
-		return shim.Error(err.Error())
-	}
 	//解析数据为结构体
 	json.Unmarshal(results, &fishinfo)
 	//解析数据为json
